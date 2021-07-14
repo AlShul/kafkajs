@@ -64,6 +64,7 @@ module.exports = class ConsumerGroup {
     isolationLevel,
     rackId,
     metadataMaxAge,
+    groupInstanceId,
   }) {
     /** @type {import("../../types").Cluster} */
     this.cluster = cluster
@@ -112,7 +113,7 @@ module.exports = class ConsumerGroup {
     this.lastRequest = Date.now()
 
     this[PRIVATE.SHAREDHEARTBEAT] = sharedPromiseTo(async ({ interval }) => {
-      const { groupId, generationId, memberId } = this
+      const { groupId, generationId, memberId, groupInstanceId } = this
       const now = Date.now()
 
       if (memberId && now >= this.lastRequest + interval) {
@@ -120,6 +121,7 @@ module.exports = class ConsumerGroup {
           groupId,
           memberId,
           groupGenerationId: generationId,
+          groupInstanceId,
         }
 
         await this.coordinator.heartbeat(payload)
@@ -127,6 +129,8 @@ module.exports = class ConsumerGroup {
         this.lastRequest = Date.now()
       }
     })
+
+    this.groupInstanceId = groupInstanceId
   }
 
   isLeader() {
@@ -140,7 +144,7 @@ module.exports = class ConsumerGroup {
   }
 
   async [PRIVATE.JOIN]() {
-    const { groupId, sessionTimeout, rebalanceTimeout } = this
+    const { groupId, sessionTimeout, rebalanceTimeout, groupInstanceId } = this
 
     this.coordinator = await this.cluster.findGroupCoordinator({ groupId })
 
@@ -154,6 +158,7 @@ module.exports = class ConsumerGroup {
           topics: this.topicsSubscribed,
         })
       ),
+      groupInstanceId,
     })
 
     this.generationId = groupData.generationId
@@ -182,6 +187,7 @@ module.exports = class ConsumerGroup {
       topics,
       topicsSubscribed,
       coordinator,
+      groupInstanceId,
     } = this
 
     if (this.isLeader()) {
@@ -213,6 +219,7 @@ module.exports = class ConsumerGroup {
       generationId,
       memberId,
       groupAssignment: assignment,
+      groupInstanceId,
     })
 
     const decodedMemberAssignment = MemberAssignment.decode(memberAssignment)
@@ -224,6 +231,7 @@ module.exports = class ConsumerGroup {
       generationId,
       memberId,
       memberAssignment: decodedAssignment,
+      groupInstanceId,
     })
 
     const assignedTopics = keys(decodedAssignment)
