@@ -61,6 +61,7 @@ module.exports = ({
   rackId = '',
   instrumentationEmitter: rootInstrumentationEmitter,
   metadataMaxAge,
+  groupInstanceId,
 }) => {
   if (!groupId) {
     throw new KafkaJSNonRetriableError('Consumer groupId must be a non-empty string.')
@@ -104,6 +105,7 @@ module.exports = ({
       isolationLevel,
       rackId,
       metadataMaxAge,
+      groupInstanceId,
     })
   }
 
