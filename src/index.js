@@ -135,6 +135,7 @@ module.exports = class Client {
     maxInFlightRequests,
     readUncommitted = false,
     rackId = '',
+    groupInstanceId,
   } = {}) {
     const isolationLevel = readUncommitted
       ? ISOLATION_LEVEL.READ_UNCOMMITTED
@@ -166,6 +167,7 @@ module.exports = class Client {
       instrumentationEmitter,
       rackId,
       metadataMaxAge,
+      groupInstanceId,
     })
   }
 
